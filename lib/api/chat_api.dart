@@ -17,7 +17,10 @@ class ChatApi {
       body: jsonEncode({
         "model": "gpt-5-mini",
         "messages": [
-          {"role": "system", "content": "Du bist ein Chatbot der auf Aktien spezialisiert ist."},
+          {"role": "system", "content": ""
+              "Du bist ein Chatbot der auf Aktien spezialisiert ist. "
+              "Gib kurze und prägnante Antworten."
+              "Du trifst die Entscheidung für den Nutzer."},
           {"role": "user", "content": message}
         ]
       }),
