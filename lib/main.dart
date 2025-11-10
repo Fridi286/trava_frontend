@@ -6,7 +6,7 @@ import 'package:trava_frontend/theme/light_theme.dart';
 import 'package:trava_frontend/theme/dark_theme.dart';
 import 'package:trava_frontend/utils/colors.dart';
 
-import 'models/theme_provider.dart';
+import 'utils/theme_provider.dart';
 
 Future<void> main() async {
   await dotenv.load(fileName: ".env");

@@ -3,10 +3,13 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter_chat_core/flutter_chat_core.dart';
 import 'package:flutter_chat_ui/flutter_chat_ui.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../api/chat_api.dart';
-import '../models/theme_provider.dart';
+import '../models/test_api_key.dart';
+import '../utils/theme_provider.dart';
 
 class Basic extends StatefulWidget {
   const Basic({super.key});
@@ -17,8 +20,28 @@ class Basic extends StatefulWidget {
 
 class BasicState extends State<Basic> {
   final _chatController = InMemoryChatController();
-  
-  int message_id = 0;
+  int messageId = 0;
+  String apiKey = "";
+  bool hasApiKey = false;
+
+  @override
+  void initState() {
+    super.initState();
+    loadApiKey();
+  }
+
+  Future<void> loadApiKey() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final key = prefs.getString('openai_api_key') ?? '';
+      setState(() {
+        apiKey = key;
+        hasApiKey = key.isNotEmpty;
+      });
+    } catch (e) {
+      print("Fehler beim Laden des API Keys: $e");
+    }
+  }
 
   @override
   void dispose() {
@@ -26,55 +49,57 @@ class BasicState extends State<Basic> {
     super.dispose();
   }
 
-
   @override
   Widget build(BuildContext context) {
     final themeProvider = Provider.of<ThemeProvider>(context);
-    final isDarkMode = themeProvider.isDarkMode;
+    final chatTheme =
+    themeProvider.isDarkMode ? ChatTheme.dark() : ChatTheme.light();
 
-    final chatTheme = isDarkMode
-        ? ChatTheme.dark()
-        : ChatTheme.light();
-    return Scaffold(
-      body: Chat(
-        theme: chatTheme,
-        chatController: _chatController,
-        currentUserId: 'user1',
-        onMessageSend: (text) async {
-          _chatController.insertMessage(
-            TextMessage(
-              // Better to use UUID or similar for the ID - IDs must be unique
-              id: '${++message_id}',
-              authorId: 'user1',
-              createdAt: DateTime.now().toUtc(),
-              text: text,
-            ),
-          );
-          _chatController.insertMessage(
-            TextMessage(
-              id: '${-(message_id)}',
-              authorId: 'ai_response',
-              createdAt: DateTime.now().toUtc(),
-              text: "...",
-            ),
-          );
-          _chatController.updateMessage(
-              TextMessage(
-                id: '${-message_id}',
-                authorId: 'user1',
-                  text: ''
-              ),
-              TextMessage(
-                id: '${-(++message_id)}',
-                authorId: 'ai_response',
-                text: await ChatApi.sendMessage(text),
-              )
-          );
-        },
-        resolveUser: (UserID id) async {
-          return User(id: id, name: 'Nutzer');
-        },
-      ),
+    if (!hasApiKey) {
+      return const Center(
+        child: Text("❌ Kein API Key gefunden oder ungültig"),
+      );
+    }
+
+    final chatApi = ChatApi(apiKey: apiKey);
+
+    return Chat(
+      theme: chatTheme,
+      chatController: _chatController,
+      currentUserId: 'user1',
+      onMessageSend: (text) async {
+        _chatController.insertMessage(
+          TextMessage(
+            id: '${++messageId}',
+            authorId: 'user1',
+            createdAt: DateTime.now().toUtc(),
+            text: text,
+          ),
+        );
+
+        final placeholder = TextMessage(
+          id: 'temp-$messageId',
+          authorId: 'ai_response',
+          createdAt: DateTime.now().toUtc(),
+          text: "...",
+        );
+        _chatController.insertMessage(placeholder);
+
+        final reply = await chatApi.sendMessage(text);
+
+        _chatController.updateMessage(
+          placeholder,
+          TextMessage(
+            id: '${-(messageId)}',
+            authorId: 'ai_response',
+            createdAt: DateTime.now().toUtc(),
+            text: reply,
+          ),
+        );
+      },
+      resolveUser: (UserID id) async {
+        return User(id: id, name: id == 'user1' ? 'Du' : 'TRAVA');
+      },
     );
   }
 }
