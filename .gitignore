@@ -46,3 +46,4 @@ app.*.map.json
 
 # Ignore API Keys
 .env
+.env-private
