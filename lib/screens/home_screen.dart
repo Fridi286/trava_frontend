@@ -27,12 +27,6 @@ class _ChatScreenState extends State<ChatScreen> {
       appBar: AppBar(
         title: const Text('TRAVA'),
         actions: [
-          ApiKeyButton(
-            onApiKeyChanged: () {
-              _chatKey.currentState
-                  ?.loadApiKey(); // 👈 ruft Funktion im Chat auf
-            },
-          ),
           DarkModeSwitch(),
         ],
       ),

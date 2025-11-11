@@ -23,26 +23,10 @@ class ChatWidgetState extends State<ChatWidget> {
 
   );
   int messageId = 0;
-  String apiKey = "";
-  bool hasApiKey = false;
 
   @override
   void initState() {
     super.initState();
-    loadApiKey();
-  }
-
-  Future<void> loadApiKey() async {
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      final key = prefs.getString('openai_api_key') ?? '';
-      setState(() {
-        apiKey = key;
-        hasApiKey = key.isNotEmpty;
-      });
-    } catch (e) {
-      print("Fehler beim Laden des API Keys: $e");
-    }
   }
 
   @override
@@ -57,13 +41,8 @@ class ChatWidgetState extends State<ChatWidget> {
     final chatTheme =
     themeProvider.isDarkMode ? ChatTheme.dark() : ChatTheme.light();
 
-    if (!hasApiKey) {
-      return const Center(
-        child: Text("❌ Kein API Key gefunden oder ungültig"),
-      );
-    }
 
-    final chatApi = ChatApi(apiKey: apiKey);
+    final chatApi = TravaApi();
 
     return Chat(
       decoration: BoxDecoration(
