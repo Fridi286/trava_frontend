@@ -19,7 +19,9 @@ class ChatWidget extends StatefulWidget {
 }
 
 class ChatWidgetState extends State<ChatWidget> {
-  final _chatController = InMemoryChatController();
+  final _chatController = InMemoryChatController(
+
+  );
   int messageId = 0;
   String apiKey = "";
   bool hasApiKey = false;
@@ -64,6 +66,8 @@ class ChatWidgetState extends State<ChatWidget> {
     final chatApi = ChatApi(apiKey: apiKey);
 
     return Chat(
+      decoration: BoxDecoration(
+      ),
       theme: chatTheme,
       chatController: _chatController,
       currentUserId: 'user1',

@@ -68,6 +68,8 @@ flutter:
     - .env
     - assets/images/TravaLogo.png
     - assets/images/Trava.png
+    - assets/portfolio.json
+    - assets/available.json
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images

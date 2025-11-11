@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:trava_frontend/widgets/basic_chat.dart';
 import 'package:trava_frontend/widgets/dark_mode_switch.dart';
-import 'package:trava_frontend/widgets/portfolio_preview.dart';
+import 'package:trava_frontend/widgets/all_stocks_preview.dart';
 
 import '../utils/theme_provider.dart';
 import '../theme/colors.dart';
@@ -48,7 +48,7 @@ class _ChatScreenState extends State<ChatScreen> {
 
             Expanded(
               flex: 3,
-              child: PortfolioPreview()
+              child: AllStocksPreview()
             ),
           ],
         ),

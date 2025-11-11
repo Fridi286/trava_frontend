@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
-class StockPreview extends StatelessWidget {
-  const StockPreview({
+class SingleStockPreview extends StatelessWidget {
+  const SingleStockPreview({
     super.key,
     required this.stockName,
     required this.stockPrice,
@@ -23,10 +23,10 @@ class StockPreview extends StatelessWidget {
       height: 65,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(10),
-        color: Colors.white,
+        color: Theme.of(context).colorScheme.onPrimary,
         boxShadow: [
           BoxShadow(
-            color: Colors.grey.withOpacity(0.5),
+            color: Theme.of(context).colorScheme.onSurface.withOpacity(0.2),
             spreadRadius: 2,
             blurRadius: 5,
             offset: const Offset(0, 3),
