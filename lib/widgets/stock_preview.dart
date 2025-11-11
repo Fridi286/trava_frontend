@@ -19,20 +19,42 @@ class StockPreview extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
+      width: double.infinity,
+      height: 65,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(10),
+        color: Colors.white,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.withOpacity(0.5),
+            spreadRadius: 2,
+            blurRadius: 5,
+            offset: const Offset(0, 3),
+          )
+          ]
+      ),
+      margin: const EdgeInsets.all(5),
+      padding: const EdgeInsets.all(10),
       child: Row(
         children: [
-          Column(
-              children: [
-                Text(stockName),
-                Text(stockPrice.toString()),
-              ]
+          Expanded(
+            flex: 7,
+            child: Column(
+                children: [
+                  Text(stockName),
+                  Text(stockPrice.toString()),
+                ]
+            ),
           ),
-          TripleColorBar(
-            greenValue: buyValue,
-            grayValue: sellValue,
-            redValue: holdingValue,
-            height: 20,
-            width: 200,
+          Expanded(
+            flex: 7,
+            child: TripleColorBar(
+              greenValue: buyValue,
+              grayValue: sellValue,
+              redValue: holdingValue,
+              height: 20,
+              width: 200,
+            ),
           ),
         ],
       ),
@@ -53,7 +75,7 @@ class TripleColorBar extends StatelessWidget {
     required this.greenValue,
     required this.grayValue,
     required this.redValue,
-    this.height = 20,
+    this.height = 15,
     this.width = 200,
   });
 
