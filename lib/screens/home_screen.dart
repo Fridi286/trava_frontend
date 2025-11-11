@@ -2,9 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:trava_frontend/widgets/basic_chat.dart';
 import 'package:trava_frontend/widgets/dark_mode_switch.dart';
+import 'package:trava_frontend/widgets/portfolio_preview.dart';
 
 import '../utils/theme_provider.dart';
-import '../utils/colors.dart';
+import '../theme/colors.dart';
 import '../widgets/api_key_button.dart';
 
 class ChatScreen extends StatefulWidget {
@@ -16,7 +17,7 @@ class ChatScreen extends StatefulWidget {
 }
 
 class _ChatScreenState extends State<ChatScreen> {
-  final GlobalKey<BasicState> _chatKey = GlobalKey();
+  final GlobalKey<ChatWidgetState> _chatKey = GlobalKey();
 
   @override
   Widget build(BuildContext context) {
@@ -28,14 +29,29 @@ class _ChatScreenState extends State<ChatScreen> {
         actions: [
           ApiKeyButton(
             onApiKeyChanged: () {
-              _chatKey.currentState?.loadApiKey(); // 👈 ruft Funktion im Chat auf
+              _chatKey.currentState
+                  ?.loadApiKey(); // 👈 ruft Funktion im Chat auf
             },
           ),
           DarkModeSwitch(),
         ],
       ),
       body: Center(
-        child: Basic(key: _chatKey),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Expanded(
+              flex: 7,
+                child: ChatWidget(key: _chatKey)
+            ),
+
+            Expanded(
+              flex: 3,
+              child: PortfolioPreview()
+            ),
+          ],
+        ),
       ),
     );
   }

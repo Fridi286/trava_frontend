@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../utils/theme_provider.dart';
-import '../utils/colors.dart';
+import '../theme/colors.dart';
 
 
 class DarkModeSwitch extends StatefulWidget {

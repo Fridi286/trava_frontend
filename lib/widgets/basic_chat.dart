@@ -8,17 +8,17 @@ import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../api/chat_api.dart';
-import '../models/test_api_key.dart';
+import '../utils/test_api_key.dart';
 import '../utils/theme_provider.dart';
 
-class Basic extends StatefulWidget {
-  const Basic({super.key});
+class ChatWidget extends StatefulWidget {
+  const ChatWidget({super.key});
 
   @override
-  BasicState createState() => BasicState();
+  ChatWidgetState createState() => ChatWidgetState();
 }
 
-class BasicState extends State<Basic> {
+class ChatWidgetState extends State<ChatWidget> {
   final _chatController = InMemoryChatController();
   int messageId = 0;
   String apiKey = "";

@@ -4,7 +4,7 @@ import 'package:provider/provider.dart';
 import 'package:trava_frontend/screens/home_screen.dart';
 import 'package:trava_frontend/theme/light_theme.dart';
 import 'package:trava_frontend/theme/dark_theme.dart';
-import 'package:trava_frontend/utils/colors.dart';
+import 'package:trava_frontend/theme/colors.dart';
 
 import 'utils/theme_provider.dart';
 
