@@ -41,8 +41,20 @@ class SingleStockPreview extends StatelessWidget {
             flex: 7,
             child: Column(
                 children: [
-                  Text(stockName),
-                  Text(stockPrice.toString()),
+                  Flexible(
+                    child: Text(
+                      stockName,
+                      overflow: TextOverflow.ellipsis,
+                      maxLines: 1,
+                    ),
+                  ),
+                  Flexible(
+                    child: Text(
+                      stockPrice.toString(),
+                      overflow: TextOverflow.ellipsis,
+                      maxLines: 1,
+                    ),
+                  ),
                 ]
             ),
           ),
