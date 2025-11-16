@@ -40,6 +40,7 @@ class _AllStocksPreviewState extends State<AllStocksPreview> {
     });
   }
 
+
   @override
   Widget build(BuildContext context) {
 
