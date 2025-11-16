@@ -5,7 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:trava_frontend/widgets/single_stock_preview.dart';
 
 import '../models/stock.dart';
-import 'package:http/http.dart' as http;
+
 
 class AllStocksPreview extends StatefulWidget {
   const AllStocksPreview({super.key});
@@ -27,23 +27,18 @@ class _AllStocksPreviewState extends State<AllStocksPreview> {
   }
 
   Future<void> loadStocks() async {
-  final url = Uri.parse('http://127.0.0.1:8000/reply/stocks');
+    final portfolioData = await rootBundle.loadString('assets/portfolio.json');
+    final availableData = await rootBundle.loadString('assets/available.json');
 
-  final res = await http.get(url);
-  if (res.statusCode != 200) return;
+    final portfolioList = jsonDecode(portfolioData) as List;
+    final availableList = jsonDecode(availableData) as List;
 
-  final data = jsonDecode(res.body);
-
-  setState(() {
-    portfolioStocks =
-        (data['portfolio'] as List).map((e) => Stock.fromJson(e)).toList();
-
-    availableStocks =
-        (data['available'] as List).map((e) => Stock.fromJson(e)).toList();
-
-    isLoading = false;
-  });
-}
+    setState(() {
+      portfolioStocks = portfolioList.map((e) => Stock.fromJson(e)).toList();
+      availableStocks = availableList.map((e) => Stock.fromJson(e)).toList();
+      isLoading = false;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
