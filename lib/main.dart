@@ -4,16 +4,19 @@ import 'package:provider/provider.dart';
 import 'package:trava_frontend/screens/home_screen.dart';
 import 'package:trava_frontend/theme/light_theme.dart';
 import 'package:trava_frontend/theme/dark_theme.dart';
-import 'package:trava_frontend/theme/colors.dart';
 
 import 'utils/theme_provider.dart';
+import 'utils/user_provider.dart';
 
 Future<void> main() async {
   await dotenv.load(fileName: ".env");
 
   runApp(
-    ChangeNotifierProvider(
-      create: (_) => ThemeProvider(),
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => ThemeProvider()),
+        ChangeNotifierProvider(create: (_) => UserProvider()),
+      ],
       child: const MyApp(),
     ),
   );

@@ -4,7 +4,11 @@ import 'package:http/http.dart' as http;
 class TravaApi {
   static const _apiUrl = "http://127.0.0.1:8000/reply/master";
 
-  Future<String> sendMessage(String message) async {
+  Future<String> sendMessage(
+    String message, {
+    required String username,
+    required bool forceDirective,
+  }) async {
     try {
       final response = await http.post(
         Uri.parse(_apiUrl),
@@ -13,6 +17,10 @@ class TravaApi {
         },
         body: jsonEncode({
           "query": message,
+          "metadata": {
+            "username": username,
+            "forceDirective": forceDirective,
+          }
         }),
       );
 
