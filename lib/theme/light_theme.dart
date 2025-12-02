@@ -11,7 +11,7 @@ final ThemeData lightTheme = ThemeData(
     onSecondary: Colors.white,
     onSurface: Color(0xFF5B4636), // dunklerer Text
   ),
-  scaffoldBackgroundColor: Color(0xFFFFF8F0), // cremefarbener Hintergrund
+  scaffoldBackgroundColor: Color(0xFFFFF8F0), //cremefarbener Hintergrund
   appBarTheme: const AppBarTheme(
     backgroundColor: Color(0xFFD9B48F),
     foregroundColor: Color(0xFF5B4636),
