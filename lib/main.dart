@@ -1,10 +1,14 @@
+import 'dart:html' as html;
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:provider/provider.dart';
-import 'package:trava_frontend/screens/home_screen.dart';
-import 'package:trava_frontend/screens/login_screen.dart';
-import 'package:trava_frontend/theme/light_theme.dart';
-import 'package:trava_frontend/theme/dark_theme.dart';
+
+import 'screens/home_screen.dart';
+import 'screens/login_screen.dart';
+import 'screens/auth_screen.dart';
+
+import 'theme/light_theme.dart';
+import 'theme/dark_theme.dart';
 
 import 'utils/theme_provider.dart';
 import 'utils/user_provider.dart';
@@ -26,7 +30,6 @@ Future<void> main() async {
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     final themeProvider = Provider.of<ThemeProvider>(context);
@@ -37,13 +40,44 @@ class MyApp extends StatelessWidget {
       theme: lightTheme,
       darkTheme: darkTheme,
       themeMode: themeProvider.themeMode,
-      home: const _AppEntryPoint(),
+      routes: {
+        '/': (context) => const _AppEntryPoint(),
+        '/login': (context) => const LoginScreen(),
+        '/auth': (context) => const AuthScreen(),
+      },
+      initialRoute: '/',
     );
   }
 }
 
-class _AppEntryPoint extends StatelessWidget {
+class _AppEntryPoint extends StatefulWidget {
   const _AppEntryPoint();
+
+  @override
+  State<_AppEntryPoint> createState() => _AppEntryPointState();
+}
+
+class _AppEntryPointState extends State<_AppEntryPoint> {
+  @override
+  void initState() {
+    super.initState();
+
+    // Token aus Redirect (#/auth?token=XYZ)
+    final uri = Uri.parse(html.window.location.href);
+    final token = uri.queryParameters['token'];
+
+    if (token != null) {
+      html.window.localStorage['jwt'] = token;
+
+      // Entfernt das Token optisch aus der URL
+      html.window.history.replaceState(null, '', '/');
+    }
+
+    // Danach User Lade-Vorgang starten
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      Provider.of<UserProvider>(context, listen: false);
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -55,7 +89,7 @@ class _AppEntryPoint extends StatelessWidget {
           );
         }
 
-        if (userProvider.username == null) {
+        if (!userProvider.isLoggedIn) {
           return const LoginScreen();
         }
 
@@ -64,5 +98,3 @@ class _AppEntryPoint extends StatelessWidget {
     );
   }
 }
-
-

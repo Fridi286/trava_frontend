@@ -15,15 +15,8 @@ class ChatWidget extends StatefulWidget {
 }
 
 class ChatWidgetState extends State<ChatWidget> {
-  final _chatController = InMemoryChatController(
-
-  );
+  final _chatController = InMemoryChatController();
   int messageId = 0;
-
-  @override
-  void initState() {
-    super.initState();
-  }
 
   @override
   void dispose() {
@@ -35,18 +28,21 @@ class ChatWidgetState extends State<ChatWidget> {
   Widget build(BuildContext context) {
     final themeProvider = Provider.of<ThemeProvider>(context);
     final userProvider = Provider.of<UserProvider>(context);
+
     final chatTheme =
         themeProvider.isDarkMode ? ChatTheme.dark() : ChatTheme.light();
 
     final chatApi = TravaApi();
 
+    final currentUserName = userProvider.username ?? "Du";
+    final currentUserId = currentUserName; // eindeutige ID pro Nutzer
+
     return Chat(
       theme: chatTheme,
       chatController: _chatController,
-      currentUserId: 'user1',
+      currentUserId: currentUserId,
       onMessageSend: (text) async {
-        final username = userProvider.username ?? 'Unbekannt';
-        var messageForApi = '$text\n\nsend by Username: $username';
+        var messageForApi = '$text\n\nsend by Username: $currentUserName';
 
         if (userProvider.forceMode) {
           messageForApi +=
@@ -56,7 +52,7 @@ class ChatWidgetState extends State<ChatWidget> {
         _chatController.insertMessage(
           TextMessage(
             id: '${++messageId}',
-            authorId: 'user1',
+            authorId: currentUserId,
             createdAt: DateTime.now().toUtc(),
             text: text,
           ),
@@ -83,7 +79,10 @@ class ChatWidgetState extends State<ChatWidget> {
         );
       },
       resolveUser: (UserID id) async {
-        return User(id: id, name: id == 'user1' ? username : 'TRAVA');
+        return User(
+          id: id,
+          name: id == currentUserId ? currentUserName : "TRAVA",
+        );
       },
     );
   }
