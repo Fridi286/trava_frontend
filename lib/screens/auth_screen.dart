@@ -2,7 +2,8 @@ import 'dart:html' as html;
 import 'package:flutter/material.dart';
 
 class AuthScreen extends StatefulWidget {
-  const AuthScreen({super.key});
+  final String? token;
+  const AuthScreen({super.key, this.token});
 
   @override
   State<AuthScreen> createState() => _AuthScreenState();
@@ -12,16 +13,19 @@ class _AuthScreenState extends State<AuthScreen> {
   @override
   void initState() {
     super.initState();
-    final uri = Uri.parse(html.window.location.href);
-    final token = uri.queryParameters['token'];
 
-    if (token != null) {
+    final token = widget.token;
+
+    if (token != null && token.isNotEmpty) {
       html.window.localStorage['jwt'] = token;
+
+      // Token aus URL-Struktur entfernen
+      html.window.history.replaceState(null, '', '/');
+
       WidgetsBinding.instance.addPostFrameCallback((_) {
         Navigator.pushReplacementNamed(context, '/');
       });
     } else {
-      // Falls User direkt auf /auth geht ohne Token
       WidgetsBinding.instance.addPostFrameCallback((_) {
         Navigator.pushReplacementNamed(context, '/login');
       });
@@ -30,6 +34,8 @@ class _AuthScreenState extends State<AuthScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    return const Scaffold(
+      body: Center(child: CircularProgressIndicator()),
+    );
   }
 }

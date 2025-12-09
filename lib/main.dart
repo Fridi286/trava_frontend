@@ -40,12 +40,26 @@ class MyApp extends StatelessWidget {
       theme: lightTheme,
       darkTheme: darkTheme,
       themeMode: themeProvider.themeMode,
+      initialRoute: '/',
       routes: {
         '/': (context) => const _AppEntryPoint(),
         '/login': (context) => const LoginScreen(),
-        '/auth': (context) => const AuthScreen(),
+        '/auth': (context) => const AuthScreen(), // bleibt erhalten
       },
-      initialRoute: '/',
+      onGenerateRoute: (settings) {
+        // Query parameters sauber parsen
+        final uri = Uri.parse(settings.name ?? '');
+
+        if (uri.path == '/auth') {
+          final token = uri.queryParameters['token'];
+          return MaterialPageRoute(
+            builder: (_) => AuthScreen(token: token),
+            settings: settings,
+          );
+        }
+
+        return null; // fallback → routes{} wird verwendet
+      },
     );
   }
 }
