@@ -1,6 +1,5 @@
 import 'dart:html' as html;
 import 'package:flutter/material.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:provider/provider.dart';
 
 import 'screens/home_screen.dart';
@@ -14,8 +13,7 @@ import 'utils/theme_provider.dart';
 import 'utils/user_provider.dart';
 
 Future<void> main() async {
-  await dotenv.load(fileName: ".env");
-
+  // KEIN dotenv im Web / Kubernetes
   runApp(
     MultiProvider(
       providers: [
@@ -44,10 +42,9 @@ class MyApp extends StatelessWidget {
       routes: {
         '/': (context) => const _AppEntryPoint(),
         '/login': (context) => const LoginScreen(),
-        '/auth': (context) => const AuthScreen(), // bleibt erhalten
+        '/auth': (context) => const AuthScreen(),
       },
       onGenerateRoute: (settings) {
-        // Query parameters sauber parsen
         final uri = Uri.parse(settings.name ?? '');
 
         if (uri.path == '/auth') {
@@ -58,7 +55,7 @@ class MyApp extends StatelessWidget {
           );
         }
 
-        return null; // fallback → routes{} wird verwendet
+        return null;
       },
     );
   }
@@ -76,18 +73,14 @@ class _AppEntryPointState extends State<_AppEntryPoint> {
   void initState() {
     super.initState();
 
-    // Token aus Redirect (#/auth?token=XYZ)
     final uri = Uri.parse(html.window.location.href);
     final token = uri.queryParameters['token'];
 
     if (token != null) {
       html.window.localStorage['jwt'] = token;
-
-      // Entfernt das Token optisch aus der URL
       html.window.history.replaceState(null, '', '/');
     }
 
-    // Danach User Lade-Vorgang starten
     WidgetsBinding.instance.addPostFrameCallback((_) {
       Provider.of<UserProvider>(context, listen: false);
     });
