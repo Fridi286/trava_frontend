@@ -1,15 +1,11 @@
-import 'dart:math';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_chat_core/flutter_chat_core.dart';
 import 'package:flutter_chat_ui/flutter_chat_ui.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:provider/provider.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 import '../api/chat_api.dart';
-import '../utils/test_api_key.dart';
 import '../utils/theme_provider.dart';
+import '../utils/user_provider.dart';
 
 class ChatWidget extends StatefulWidget {
   const ChatWidget({super.key});
@@ -19,15 +15,8 @@ class ChatWidget extends StatefulWidget {
 }
 
 class ChatWidgetState extends State<ChatWidget> {
-  final _chatController = InMemoryChatController(
-
-  );
+  final _chatController = InMemoryChatController();
   int messageId = 0;
-
-  @override
-  void initState() {
-    super.initState();
-  }
 
   @override
   void dispose() {
@@ -38,23 +27,32 @@ class ChatWidgetState extends State<ChatWidget> {
   @override
   Widget build(BuildContext context) {
     final themeProvider = Provider.of<ThemeProvider>(context);
-    final chatTheme =
-    themeProvider.isDarkMode ? ChatTheme.dark() : ChatTheme.light();
+    final userProvider = Provider.of<UserProvider>(context);
 
+    final chatTheme =
+        themeProvider.isDarkMode ? ChatTheme.dark() : ChatTheme.light();
 
     final chatApi = TravaApi();
 
+    final currentUserName = userProvider.username ?? "Du";
+    final currentUserId = currentUserName; // eindeutige ID pro Nutzer
+
     return Chat(
-      decoration: BoxDecoration(
-      ),
       theme: chatTheme,
       chatController: _chatController,
-      currentUserId: 'user1',
+      currentUserId: currentUserId,
       onMessageSend: (text) async {
+        var messageForApi = '$text\n\nsend by Username: $currentUserName';
+
+        if (userProvider.forceMode) {
+          messageForApi +=
+              '\n\nstelle keine unnötigen Rückfragen, entscheide selbstständig';
+        }
+
         _chatController.insertMessage(
           TextMessage(
             id: '${++messageId}',
-            authorId: 'user1',
+            authorId: currentUserId,
             createdAt: DateTime.now().toUtc(),
             text: text,
           ),
@@ -68,7 +66,7 @@ class ChatWidgetState extends State<ChatWidget> {
         );
         _chatController.insertMessage(placeholder);
 
-        final reply = await chatApi.sendMessage(text);
+        final reply = await chatApi.sendMessage(messageForApi);
 
         _chatController.updateMessage(
           placeholder,
@@ -81,7 +79,10 @@ class ChatWidgetState extends State<ChatWidget> {
         );
       },
       resolveUser: (UserID id) async {
-        return User(id: id, name: id == 'user1' ? 'Du' : 'TRAVA');
+        return User(
+          id: id,
+          name: id == currentUserId ? currentUserName : "TRAVA",
+        );
       },
     );
   }

@@ -1,19 +1,25 @@
+import 'dart:html' as html;
 import 'package:flutter/material.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:provider/provider.dart';
-import 'package:trava_frontend/screens/home_screen.dart';
-import 'package:trava_frontend/theme/light_theme.dart';
-import 'package:trava_frontend/theme/dark_theme.dart';
-import 'package:trava_frontend/theme/colors.dart';
+
+import 'screens/home_screen.dart';
+import 'screens/login_screen.dart';
+import 'screens/auth_screen.dart';
+
+import 'theme/light_theme.dart';
+import 'theme/dark_theme.dart';
 
 import 'utils/theme_provider.dart';
+import 'utils/user_provider.dart';
 
 Future<void> main() async {
-  await dotenv.load(fileName: ".env");
-
+  // KEIN dotenv im Web / Kubernetes
   runApp(
-    ChangeNotifierProvider(
-      create: (_) => ThemeProvider(),
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => ThemeProvider()),
+        ChangeNotifierProvider(create: (_) => UserProvider()),
+      ],
       child: const MyApp(),
     ),
   );
@@ -22,21 +28,80 @@ Future<void> main() async {
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-
     final themeProvider = Provider.of<ThemeProvider>(context);
 
     return MaterialApp(
-      title: 'Flutter Demo',
+      title: 'TRAVA Assistant',
       debugShowCheckedModeBanner: false,
       theme: lightTheme,
       darkTheme: darkTheme,
       themeMode: themeProvider.themeMode,
-      home: const ChatScreen(title: 'Your Personal Assistant'),
+      initialRoute: '/',
+      routes: {
+        '/': (context) => const _AppEntryPoint(),
+        '/login': (context) => const LoginScreen(),
+        '/auth': (context) => const AuthScreen(),
+      },
+      onGenerateRoute: (settings) {
+        final uri = Uri.parse(settings.name ?? '');
+
+        if (uri.path == '/auth') {
+          final token = uri.queryParameters['token'];
+          return MaterialPageRoute(
+            builder: (_) => AuthScreen(token: token),
+            settings: settings,
+          );
+        }
+
+        return null;
+      },
     );
   }
 }
 
+class _AppEntryPoint extends StatefulWidget {
+  const _AppEntryPoint();
 
+  @override
+  State<_AppEntryPoint> createState() => _AppEntryPointState();
+}
+
+class _AppEntryPointState extends State<_AppEntryPoint> {
+  @override
+  void initState() {
+    super.initState();
+
+    final uri = Uri.parse(html.window.location.href);
+    final token = uri.queryParameters['token'];
+
+    if (token != null) {
+      html.window.localStorage['jwt'] = token;
+      html.window.history.replaceState(null, '', '/');
+    }
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      Provider.of<UserProvider>(context, listen: false);
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Consumer<UserProvider>(
+      builder: (context, userProvider, _) {
+        if (!userProvider.isReady) {
+          return const Scaffold(
+            body: Center(child: CircularProgressIndicator()),
+          );
+        }
+
+        if (!userProvider.isLoggedIn) {
+          return const LoginScreen();
+        }
+
+        return const ChatScreen(title: 'Your Personal Assistant');
+      },
+    );
+  }
+}

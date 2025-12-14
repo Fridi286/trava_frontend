@@ -33,6 +33,19 @@ migrate_working_dir/
 /build/
 /coverage/
 
+# Gradle (Android)
+/android/.gradle/
+/android/local.properties
+/android/**/GeneratedPluginRegistrant.*
+
+# Xcode (iOS/macOS)
+**/ios/Flutter/Flutter.podspec
+**/ios/Flutter/Generated.xcconfig
+**/macos/Flutter/Flutter.podspec
+**/macos/Flutter/Generated.xcconfig
+**/macos/Flutter/ephemeral/
+**/macos/Runner.xcworkspace/xcuserdata/
+
 # Symbolication related
 app.*.symbols
 
