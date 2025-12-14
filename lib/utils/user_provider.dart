@@ -4,6 +4,8 @@ import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../config.dart';
+
 class UserProvider extends ChangeNotifier {
   String? _username;
   bool _forceMode = false;
@@ -30,7 +32,7 @@ class UserProvider extends ChangeNotifier {
 
     try {
       final response = await http.get(
-        Uri.parse("http://localhost:8080/auth/me"),
+        apiUrl('/auth/me'),
         headers: {"Authorization": "Bearer $token"},
       );
 
