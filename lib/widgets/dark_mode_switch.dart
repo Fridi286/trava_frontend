@@ -36,13 +36,13 @@ class _DarkModeSwitchState extends State<DarkModeSwitch> {
       ), 
       activeTrackColor: Color(0xFF1E3A5F),
       activeThumbColor: Color(0xFFD0E1F9),
-      inactiveThumbColor: Color(0xFF5B4636),
-      inactiveTrackColor: Color(0xFFB58B68),
+      inactiveThumbColor: Color(0xFF566978),
+      inactiveTrackColor: Color(0xFFC7D2FA),
       trackOutlineColor: WidgetStateProperty.resolveWith<Color?>((Set<WidgetState> states) {
         if (themeProvider.isDarkMode) {
           return Color(0xFFD0E1F9);
         }
-        return Color(0xFF5B4636);
+        return Color(0xFF465664);
       }),
     );
   }
