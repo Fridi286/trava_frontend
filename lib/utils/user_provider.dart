@@ -30,7 +30,7 @@ class UserProvider extends ChangeNotifier {
 
     try {
       final response = await http.get(
-        Uri.parse("http://localhost:8000/auth/me"),
+        Uri.parse("http://localhost:8080/auth/me"),
         headers: {"Authorization": "Bearer $token"},
       );
 

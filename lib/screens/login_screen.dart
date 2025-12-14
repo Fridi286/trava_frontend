@@ -10,7 +10,7 @@ class LoginScreen extends StatelessWidget {
       body: Center(
         child: ElevatedButton(
           onPressed: () {
-            html.window.location.href = "http://localhost:8000/auth/login";
+            html.window.location.href = "http://localhost:8080/auth/login";
           },
           child: const Text("Login via GitLab"),
         ),
