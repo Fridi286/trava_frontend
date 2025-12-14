@@ -6,7 +6,7 @@ import '../config.dart';
 
 class TravaApi {
   // API Base ist build-time konfigurierbar via --dart-define=API_BASE_URL=...
-  static final Uri _replyMasterUrl = apiUrl('/reply/master');
+  static final Uri _replyMasterUrl = apiUrl('/api/reply/master');
 
   Future<String> sendMessage(String message) async {
     final token = html.window.localStorage['jwt'];

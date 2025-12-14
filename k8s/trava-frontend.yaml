@@ -1,0 +1,46 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: trava-frontend
+  labels:
+    app: trava-frontend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: trava-frontend
+  template:
+    metadata:
+      labels:
+        app: trava-frontend
+    spec:
+      imagePullSecrets:
+        - name: ghcr-secret
+      containers:
+        - name: trava-frontend
+          image: ghcr.io/homemichi/trava-frontend:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 80
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+            limits:
+              cpu: "500m"
+              memory: "256Mi"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: frontend-service
+  labels:
+    app: trava-frontend
+spec:
+  selector:
+    app: trava-frontend
+  ports:
+    - name: http
+      port: 80
+      targetPort: 80
+  type: ClusterIP
