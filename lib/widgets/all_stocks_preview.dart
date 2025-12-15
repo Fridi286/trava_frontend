@@ -60,9 +60,6 @@ class _AllStocksPreviewState extends State<AllStocksPreview> {
               return SingleStockPreview(
                 stockName: stock.stockName,
                 stockPrice: stock.stockPrice,
-                buyValue: stock.buyValue,
-                sellValue: stock.sellValue,
-                holdingValue: stock.holdingValue,
               );
             },
           ),
@@ -77,9 +74,6 @@ class _AllStocksPreviewState extends State<AllStocksPreview> {
               return SingleStockPreview(
                 stockName: stock.stockName,
                 stockPrice: stock.stockPrice,
-                buyValue: stock.buyValue,
-                sellValue: stock.sellValue,
-                holdingValue: stock.holdingValue,
               );
             },
           ),
