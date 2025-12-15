@@ -2,16 +2,11 @@ import 'dart:convert';
 import 'dart:html' as html;
 import 'package:http/http.dart' as http;
 
-class TravaApi {
-  // API Base ist build-time konfigurierbar:
-  // Lokal: default -> http://localhost:8080
-  // Prod:  flutter build web --dart-define=API_BASE_URL=https://app.example.tld/api
-  static const String _apiBaseUrl = String.fromEnvironment(
-    'API_BASE_URL',
-    defaultValue: 'http://localhost:8080',
-  );
+import '../config.dart';
 
-  static final Uri _replyMasterUrl = Uri.parse('$_apiBaseUrl/reply/master');
+class TravaApi {
+  // API Base ist build-time konfigurierbar via --dart-define=API_BASE_URL=...
+  static final Uri _replyMasterUrl = apiUrl('/api/reply/master');
 
   Future<String> sendMessage(String message) async {
     final token = html.window.localStorage['jwt'];
