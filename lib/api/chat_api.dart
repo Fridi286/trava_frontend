@@ -34,7 +34,6 @@ class TravaApi {
         html.window.location.href = "/#/login";
         return "Session abgelaufen. Bitte erneut einloggen.";
       } else {
-        // Response ist nicht garantiert JSON
         try {
           final error = jsonDecode(response.body);
           final errorMsg = error["error"]?["message"] ?? response.body;
@@ -46,5 +45,33 @@ class TravaApi {
     } catch (e) {
       return "Anfrage fehlgeschlagen: $e";
     }
+  }
+
+  // ✅ HIER: echte Implementierung
+  Future<String> getPortfolioSummaryText(String username) async {
+    final token = html.window.localStorage['jwt'];
+
+    if (token == null) {
+      html.window.location.href = "/#/login";
+      return "Nicht eingeloggt.";
+    }
+
+    final uri = apiUrl(
+      '/api/alpaca/summary/text',
+    );
+
+    final response = await http.get(
+      uri,
+      headers: {
+        'Authorization': 'Bearer $token',
+      },
+    );
+
+    if (response.statusCode != 200) {
+      return '⚠️ Portfolio konnte nicht geladen werden.';
+    }
+
+    final data = jsonDecode(response.body);
+    return data['message'] as String;
   }
 }

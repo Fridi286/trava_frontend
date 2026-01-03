@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_chat_core/flutter_chat_core.dart';
 import 'package:flutter_chat_ui/flutter_chat_ui.dart';
@@ -15,8 +17,47 @@ class ChatWidget extends StatefulWidget {
 }
 
 class ChatWidgetState extends State<ChatWidget> {
-  final _chatController = InMemoryChatController();
-  int messageId = 0;
+  final InMemoryChatController _chatController = InMemoryChatController();
+  int _messageId = 0;
+  bool _welcomeMessageSent = false;
+
+  @override
+  void initState() {
+    super.initState();
+
+    /// WICHTIG:
+    /// Nachricht erst NACH dem ersten Layout einfügen,
+    /// sonst Flutter-Web-Crash (RenderBox / history state)
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      final userProvider =
+          Provider.of<UserProvider>(context, listen: false);
+
+      if (_welcomeMessageSent) return;
+      if (userProvider.username == null) return;
+
+      _welcomeMessageSent = true;
+
+      final chatApi = TravaApi();
+
+      String text;
+      try {
+        text = await chatApi.getPortfolioSummaryText(
+          userProvider.username!,
+        );
+      } catch (_) {
+        text = 'Portfolio konnte nicht geladen werden.';
+      }
+
+      _chatController.insertMessage(
+        TextMessage(
+          id: 'welcome',
+          authorId: 'ai_response',
+          createdAt: DateTime.now().toUtc(),
+          text: text,
+        ),
+      );
+    });
+  }
 
   @override
   void dispose() {
@@ -35,12 +76,13 @@ class ChatWidgetState extends State<ChatWidget> {
     final chatApi = TravaApi();
 
     final currentUserName = userProvider.username ?? "Du";
-    final currentUserId = currentUserName; // eindeutige ID pro Nutzer
+    final currentUserId = currentUserName;
 
     return Chat(
       theme: chatTheme,
       chatController: _chatController,
       currentUserId: currentUserId,
+
       onMessageSend: (text) async {
         var messageForApi = '$text\n\nsend by Username: $currentUserName';
 
@@ -49,35 +91,47 @@ class ChatWidgetState extends State<ChatWidget> {
               '\n\nstelle keine unnötigen Rückfragen, entscheide selbstständig';
         }
 
-        _chatController.insertMessage(
-          TextMessage(
-            id: '${++messageId}',
-            authorId: currentUserId,
-            createdAt: DateTime.now().toUtc(),
-            text: text,
-          ),
+        final userMessage = TextMessage(
+          id: '${++_messageId}',
+          authorId: currentUserId,
+          createdAt: DateTime.now().toUtc(),
+          text: text,
         );
+        _chatController.insertMessage(userMessage);
 
         final placeholder = TextMessage(
-          id: 'temp-$messageId',
+          id: 'temp-$_messageId',
           authorId: 'ai_response',
           createdAt: DateTime.now().toUtc(),
-          text: "...",
+          text: '…',
         );
         _chatController.insertMessage(placeholder);
 
-        final reply = await chatApi.sendMessage(messageForApi);
+        try {
+          final reply = await chatApi.sendMessage(messageForApi);
 
-        _chatController.updateMessage(
-          placeholder,
-          TextMessage(
-            id: '${-(messageId)}',
-            authorId: 'ai_response',
-            createdAt: DateTime.now().toUtc(),
-            text: reply,
-          ),
-        );
+          _chatController.updateMessage(
+            placeholder,
+            TextMessage(
+              id: '${-_messageId}',
+              authorId: 'ai_response',
+              createdAt: DateTime.now().toUtc(),
+              text: reply,
+            ),
+          );
+        } catch (_) {
+          _chatController.updateMessage(
+            placeholder,
+            TextMessage(
+              id: '${-_messageId}',
+              authorId: 'ai_response',
+              createdAt: DateTime.now().toUtc(),
+              text: 'Fehler beim Senden der Nachricht.',
+            ),
+          );
+        }
       },
+
       resolveUser: (UserID id) async {
         return User(
           id: id,
