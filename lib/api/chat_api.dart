@@ -47,31 +47,46 @@ class TravaApi {
     }
   }
 
-  // ✅ HIER: echte Implementierung
-  Future<String> getPortfolioSummaryText(String username) async {
-    final token = html.window.localStorage['jwt'];
+  Future<String> getPortfolioSummaryText() async {
+  final uri = apiUrl('/api/alpaca/summary/text');
 
-    if (token == null) {
-      html.window.location.href = "/#/login";
-      return "Nicht eingeloggt.";
-    }
+  final response = await http.get(
+    uri,
+    headers: {
+      'Authorization': 'Bearer ${html.window.localStorage['jwt']}',
+    },
+  );
 
-    final uri = apiUrl(
-      '/api/alpaca/summary/text',
-    );
-
-    final response = await http.get(
-      uri,
-      headers: {
-        'Authorization': 'Bearer $token',
-      },
-    );
-
-    if (response.statusCode != 200) {
-      return '⚠️ Portfolio konnte nicht geladen werden.';
-    }
-
-    final data = jsonDecode(response.body);
-    return data['message'] as String;
+  if (response.statusCode != 200) {
+    throw Exception('Portfolio konnte nicht geladen werden');
   }
+
+  final data = jsonDecode(response.body);
+  return data['message'] as String;
+}
+
+  Future<Map<String, dynamic>> getStockHistory(
+  String symbol, {
+  String timeframe = '1Hour',
+  String period = '1W',
+}) async {
+  final uri = apiUrl(
+  '/api/market/stock/$symbol'
+  '?period=$period',
+);
+
+  final response = await http.get(
+    uri,
+    headers: {
+      'Authorization': 'Bearer ${html.window.localStorage['jwt']}',
+    },
+  );
+
+  if (response.statusCode != 200) {
+    throw Exception('Kursdaten konnten nicht geladen werden');
+  }
+
+  return jsonDecode(response.body);
+}
+
 }
