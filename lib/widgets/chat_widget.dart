@@ -61,59 +61,118 @@ class ChatWidgetState extends State<ChatWidget> {
   }
 
   // ===============================
-  // AGENT → CHART HANDLING (INLINE)
+  // AGENT → CHART POPUP
   // ===============================
-  Future<void> _handleAgentAction(Map<String, dynamic> action) async {
-    if (action['type'] != 'SHOW_STOCK_CHART') return;
+  Future<void> _showChartPopup({
+    required String symbol,
+    required String period,
+  }) async {
     if (_chartLoading) return;
-
     _chartLoading = true;
 
-    final symbol = action['symbol'] as String;
-    final period = action['period'] ?? '1W';
-
-    final chatApi = TravaApi();
-
     try {
-      final data = await chatApi.getStockHistory(
-        symbol,
-        period: period,
-      );
+      final data =
+          await TravaApi().getStockHistory(symbol, period: period);
 
       final points = (data['points'] as List?) ?? [];
+      if (points.length < 2 || !mounted) return;
 
       final spots = <FlSpot>[];
       for (int i = 0; i < points.length; i++) {
         final raw = points[i]['c'];
-
-        double? y;
-        if (raw is num) {
-          y = raw.toDouble();
-        } else if (raw is String) {
-          y = double.tryParse(raw.replaceAll(',', '').trim());
-        }
-
+        final y = raw is num ? raw.toDouble() : double.tryParse('$raw');
         if (y != null && y.isFinite) {
-          spots.add(FlSpot(i.toDouble(), y));
+          final dt = DateTime.parse(points[i]['t']).toLocal();
+          final x = dt.millisecondsSinceEpoch.toDouble();
+          spots.add(FlSpot(x, y));
         }
       }
 
-      if (spots.length < 2 || !mounted) {
-        _chartLoading = false;
-        return;
-      }
+      if (spots.length < 2) return;
+      final minY = spots.map((e) => e.y).reduce((a, b) => a < b ? a : b);
+      final maxY = spots.map((e) => e.y).reduce((a, b) => a > b ? a : b);
 
-      _chatController.insertMessage(
-        TextMessage(
-          id: 'chart-${DateTime.now().millisecondsSinceEpoch}',
-          authorId: 'ai_response',
-          createdAt: DateTime.now().toUtc(),
-          text: '$symbol – Kursverlauf ($period)',
-          metadata: {
-            'chart': {
-              'spots': spots,
+      showDialog(
+        context: context,
+        builder: (_) => Dialog(
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: SizedBox(
+              width: 560,
+              height: 360,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    '$symbol – Kursverlauf ($period)',
+                    style: Theme.of(context).textTheme.titleMedium,
+                  ),
+                  const SizedBox(height: 16),
+
+                  Expanded(
+  child: LineChart(
+    LineChartData(
+      minY: minY * 0.995,
+      maxY: maxY * 1.005,
+
+      lineBarsData: [
+        LineChartBarData(
+          spots: spots,
+          isCurved: true,
+          barWidth: 2,
+          dotData: FlDotData(show: false),
+        ),
+      ],
+
+      gridData: FlGridData(
+        show: true,
+        horizontalInterval: (maxY - minY) / 4,
+      ),
+
+      borderData: FlBorderData(show: true),
+
+      titlesData: FlTitlesData(
+        leftTitles: AxisTitles(
+          sideTitles: SideTitles(
+            showTitles: true,
+            reservedSize: 56,
+            interval: (maxY - minY) / 4,
+            getTitlesWidget: (value, meta) {
+              return Text(
+                '${value.toStringAsFixed(2)} \$',
+                style: const TextStyle(fontSize: 11),
+              );
             },
-          },
+          ),
+        ),
+        bottomTitles: AxisTitles(
+          sideTitles: SideTitles(
+            showTitles: true,
+            interval: (spots.last.x - spots.first.x) / 4,
+            getTitlesWidget: (value, meta) {
+              final dt =
+                  DateTime.fromMillisecondsSinceEpoch(value.toInt());
+              return Text(
+                '${dt.day}.${dt.month}',
+                style: const TextStyle(fontSize: 10),
+              );
+            },
+          ),
+        ),
+        rightTitles: AxisTitles(
+          sideTitles: SideTitles(showTitles: false),
+        ),
+        topTitles: AxisTitles(
+          sideTitles: SideTitles(showTitles: false),
+        ),
+      ),
+    ),
+  ),
+),
+                ],
+              ),
+            ),
+          ),
         ),
       );
     } finally {
@@ -129,7 +188,6 @@ class ChatWidgetState extends State<ChatWidget> {
     final chatTheme =
         themeProvider.isDarkMode ? ChatTheme.dark() : ChatTheme.light();
 
-    final chatApi = TravaApi();
     final currentUserName = userProvider.username ?? 'Du';
     final currentUserId = currentUserName;
 
@@ -138,59 +196,11 @@ class ChatWidgetState extends State<ChatWidget> {
       chatController: _chatController,
       currentUserId: currentUserId,
 
-      // ===============================
-      // CUSTOM MESSAGE BUILDER (CHART)
-      // ===============================
-      customMessageBuilder: (message, {required int messageWidth}) {
-        if (message is! TextMessage) return null;
-
-        final chart = message.metadata?['chart'];
-        if (chart == null) return null;
-
-        final spots = (chart['spots'] as List).cast<FlSpot>();
-        if (spots.length < 2) {
-          return const Padding(
-            padding: EdgeInsets.all(12),
-            child: Text('Zu wenig Daten für Chart'),
-          );
-        }
-
-        final ys = spots.map((e) => e.y).toList();
-        final minY = ys.reduce((a, b) => a < b ? a : b);
-        final maxY = ys.reduce((a, b) => a > b ? a : b);
-
-        return Padding(
-          padding: const EdgeInsets.all(12),
-          child: SizedBox(
-            height: 220,
-            width: messageWidth.toDouble(),
-            child: LineChart(
-              LineChartData(
-                minY: minY == maxY ? minY * 0.99 : minY * 0.995,
-                maxY: minY == maxY ? maxY * 1.01 : maxY * 1.005,
-                lineBarsData: [
-                  LineChartBarData(
-                    spots: spots,
-                    isCurved: true,
-                    barWidth: 2,
-                    dotData: FlDotData(show: false),
-                    color: Theme.of(context).colorScheme.primary,
-                  ),
-                ],
-                gridData: FlGridData(show: true),
-                borderData: FlBorderData(show: true),
-                titlesData: FlTitlesData(
-                  leftTitles: AxisTitles(
-                    sideTitles:
-                        SideTitles(showTitles: true, reservedSize: 40),
-                  ),
-                  bottomTitles: AxisTitles(
-                    sideTitles: SideTitles(showTitles: false),
-                  ),
-                ),
-              ),
-            ),
-          ),
+      // PFLICHT in flutter_chat_ui 2.9.1
+      resolveUser: (UserID id) async {
+        return User(
+          id: id,
+          name: id == currentUserId ? currentUserName : 'TRAVA',
         );
       },
 
@@ -215,7 +225,7 @@ class ChatWidgetState extends State<ChatWidget> {
         _chatController.insertMessage(placeholder);
 
         try {
-          final reply = await chatApi.sendMessage(messageForApi);
+          final reply = await TravaApi().sendMessage(messageForApi);
 
           try {
             final action = jsonDecode(reply);
@@ -227,11 +237,14 @@ class ChatWidgetState extends State<ChatWidget> {
                   id: '${-_messageId}',
                   authorId: 'ai_response',
                   createdAt: DateTime.now().toUtc(),
-                  text: '📈 Kursverlauf:',
+                  text: '📈 Kursverlauf wird geöffnet …',
                 ),
               );
 
-              await _handleAgentAction(action);
+              await _showChartPopup(
+                symbol: action['symbol'],
+                period: action['period'] ?? '1W',
+              );
               return;
             }
           } catch (_) {}
@@ -242,3 +255,21 @@ class ChatWidgetState extends State<ChatWidget> {
               id: '${-_messageId}',
               authorId: 'ai_response',
               createdAt: DateTime.now().toUtc(),
+              text: reply,
+            ),
+          );
+        } catch (_) {
+          _chatController.updateMessage(
+            placeholder,
+            TextMessage(
+              id: '${-_messageId}',
+              authorId: 'ai_response',
+              createdAt: DateTime.now().toUtc(),
+              text: 'Fehler beim Senden der Nachricht.',
+            ),
+          );
+        }
+      },
+    );
+  }
+}
