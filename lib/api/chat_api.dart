@@ -65,6 +65,24 @@ class TravaApi {
   return data['message'] as String;
 }
 
+Future<String> requestPortfolioInsight() async {
+    final portfolioSummary = await getPortfolioSummaryText();
+    final prompt = '''
+Hier ist mein aktuelles Portfolio in zusammengefasster Form:
+
+$portfolioSummary
+
+Aufgabe:
+- anylsiere alle aktien aus meinem portfolio und gib mir eine zusammenfassung ob du etwas verkaufen halten oder beobachten würdest. 
+  z.B. 3 deiner aktien würde ich verkaufen 2 halten
+- Entsprechend des Geldes was ich zur Verfügung habe überleg dir aktien die du empfehlen kannst z.B: "Mit dem verfügbaren Guthaben könntest du in den bereich investieren"
+- Berücksichtige dabei aktuelle Markttrends und Nachrichten
+- Alles muss von dir später begründet werden können
+- Mach mir gegliederter Stichpunkte mit überschriften
+''';
+    return await sendMessage(prompt);
+}
+
   Future<Map<String, dynamic>> getStockHistory(
   String symbol, {
   String timeframe = '1Hour',

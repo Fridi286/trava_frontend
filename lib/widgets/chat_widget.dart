@@ -51,6 +51,17 @@ class ChatWidgetState extends State<ChatWidget> {
           text: text,
         ),
       );
+
+      final insight = await chatApi.requestPortfolioInsight();
+
+      _chatController.insertMessage(
+        TextMessage(
+          id: 'portfolio-insight',
+          authorId: 'ai_response',
+          createdAt: DateTime.now().toUtc(),
+          text: insight,
+        ),
+      );
     });
   }
 
