@@ -75,6 +75,7 @@ $portfolioSummary
 
 Aufgabe:
 Du bist ein vanalytischer Finanzassistent.
+Mach nur aussagen die mich konkret betreffen. Ich will keine allgemeinen Ratschläge, sondern konkrete Aussagen zu meinem Portfolio.
 
 1. Analysiere alle Positionen im Portfolio qualitativ.
    - Gruppiere sie grob in: verkaufen, halten, beobachten
@@ -91,7 +92,7 @@ Du bist ein vanalytischer Finanzassistent.
 
 Ausgabeformat:
 - Gegliederte Stichpunkte
-- Maximal 6–8 Bulletpoints insgesamt
+- Maximal 6 Bulletpoints insgesamt
 ''';
 
   return await sendMessage(prompt);
