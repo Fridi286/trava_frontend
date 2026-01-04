@@ -66,21 +66,35 @@ class TravaApi {
 }
 
 Future<String> requestPortfolioInsight() async {
-    final portfolioSummary = await getPortfolioSummaryText();
-    final prompt = '''
+  final portfolioSummary = await getPortfolioSummaryText();
+
+  final prompt = '''
 Hier ist mein aktuelles Portfolio in zusammengefasster Form:
 
 $portfolioSummary
 
 Aufgabe:
-- anylsiere alle aktien aus meinem portfolio und gib mir eine zusammenfassung ob du etwas verkaufen halten oder beobachten würdest. 
-  z.B. 3 deiner aktien würde ich verkaufen 2 halten
-- Entsprechend des Geldes was ich zur Verfügung habe überleg dir aktien die du empfehlen kannst z.B: "Mit dem verfügbaren Guthaben könntest du in den bereich investieren"
-- Berücksichtige dabei aktuelle Markttrends und Nachrichten
-- Alles muss von dir später begründet werden können
-- Mach mir gegliederter Stichpunkte mit überschriften
+Du bist ein vanalytischer Finanzassistent.
+
+1. Analysiere alle Positionen im Portfolio qualitativ.
+   - Gruppiere sie grob in: verkaufen, halten, beobachten
+   - Nenne nur die Anzahl der Positionen je Kategorie (keine Namen, keine Zahlen)
+
+2. Beziehe das aktuell verfügbare Cash mit ein.
+   - Beschreibe allgemein, in welche Marktbereiche oder Sektoren man investieren könnte
+   - benutzte nachrichten und trends um sinnvolle aktuelle themen zu nennen. aber du musst sie nicht im text begründen
+   - bezieh das aktuelle portfolio mit ein um strategien zu begründen
+   
+3. Formuliere ein paar prägnante Aussagen zu meinem Portfolio.
+
+4. Jede Aussage muss begründbar sein.
+
+Ausgabeformat:
+- Gegliederte Stichpunkte
+- Maximal 6–8 Bulletpoints insgesamt
 ''';
-    return await sendMessage(prompt);
+
+  return await sendMessage(prompt);
 }
 
   Future<Map<String, dynamic>> getStockHistory(
